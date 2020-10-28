@@ -1,0 +1,64 @@
+apply plugin: "maven-publish"
+
+private static String camelCase(String value) {
+    value.split("[^a-zA-Z0-9]+").collect {it.capitalize() }.join()
+}
+
+String AWS_ID = "AEVI_ARTIFACTORY_AWS_ACCESS_ID"
+String AWS_SECRET = "AEVI_ARTIFACTORY_AWS_SECRET"
+
+String GITHUB_REPO = "GITHUB_REPOSITORY"
+String GITHUB_ID = "GITHUB_ACTOR"
+String GITHUB_SECRET = "GITHUB_TOKEN"
+
+publishing {
+    repositories {
+        if (System.getenv(AWS_ID) && System.getenv(AWS_SECRET)) {
+            maven {
+                name "release"
+                url "s3://sdk-releases.aevi.com/maven2"
+                credentials(AwsCredentials) {
+                    accessKey System.getenv(AWS_ID)
+                    secretKey System.getenv(AWS_SECRET)
+                }
+            }
+            maven {
+                name "qa"
+                url "s3://sdk-qa.aevi.com/maven2"
+                credentials(AwsCredentials) {
+                    accessKey System.getenv(AWS_ID)
+                    secretKey System.getenv(AWS_SECRET)
+                }
+            }
+            maven {
+                name = "snapshot"
+                url "s3://sdk-snapshots.aevi.com/maven2"
+                credentials(AwsCredentials) {
+                    accessKey System.getenv(AWS_ID)
+                    secretKey System.getenv(AWS_SECRET)
+                }
+            }
+        }
+        if (System.getenv(GITHUB_REPO) && System.getenv(GITHUB_ID) && System.getenv(GITHUB_SECRET)) {
+            repositories {
+                maven {
+                    name = "GitHubPackages"
+                    url = "https://maven.pkg.github.com/${System.getenv(GITHUB_REPO)}"
+                    credentials {
+                        username = System.getenv(GITHUB_ID)
+                        password = System.getenv(GITHUB_SECRET)
+                    }
+                }
+            }
+        }
+    }
+    afterEvaluate {
+        publications {
+            components.all { component ->
+                "${camelCase("${project.name}_${component.name}")}"(MavenPublication) {
+                    from component
+                }
+            }
+        }
+    }
+}
