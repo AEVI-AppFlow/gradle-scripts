@@ -1,5 +1,9 @@
 class Signing {
 
+    private static String camelCase(String value) {
+        value.split("[^a-zA-Z0-9]+").collect {it.capitalize() }.join()
+    }
+
     private static resolveProperty(String name, Object target) {
         if (target.hasProperty(name)) {
             return target.property(name);
@@ -20,15 +24,26 @@ class Signing {
         }
     }
 
+    private static registerKeystoreCreationTask(Project project, File buildDir, String name, String keystore) {
+        File keystoreFile = new File("$buildDir/${name}.jks")
+        String taskName = "create${camelCase(name)}Keystore"
+        project.task(taskName) {
+            doLast {
+                if (!keystoreFile.exists()) {
+                    keystoreFile.parentFile.mkdirs()
+                    keystoreFile << keystore.decodeBase64()
+                }
+            }
+        }
+        project.tasks.preBuild.dependsOn taskName
+        return keystoreFile
+    }
+
     static config = { String name, String alias = "key" ->
         resolvePropertiesOrFail (project, ["${name}_keystore", "${name}_keystore_password"]) { String keystore, String pwd ->
-            File keystoreFile = file("$delegate.rootProject.buildDir/${name}.jks")
-            if (!keystoreFile.exists()) {
-                keystoreFile << keystore.decodeBase64()
-            }
             android.signingConfigs {
                 "$name" {
-                    storeFile keystoreFile
+                    storeFile registerKeystoreCreationTask(project, rootProject.buildDir, name, keystore)
                     storePassword pwd
                     keyAlias alias
                     keyPassword pwd
