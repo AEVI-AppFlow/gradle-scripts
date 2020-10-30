@@ -4,8 +4,8 @@ private static String camelCase(String value) {
     value.split("[^a-zA-Z0-9]+").collect {it.capitalize() }.join()
 }
 
-String AWS_ID = "AEVI_ARTIFACTORY_AWS_ACCESS_ID"
-String AWS_SECRET = "AEVI_ARTIFACTORY_AWS_SECRET"
+String AWS_ID = "AWS_ACCESS_KEY_ID"
+String AWS_SECRET = "AWS_SECRET_ACCESS_KEY"
 
 String GITHUB_REPO = "GITHUB_REPOSITORY"
 String GITHUB_ID = "GITHUB_ACTOR"
@@ -42,7 +42,7 @@ publishing {
         if (System.getenv(GITHUB_REPO) && System.getenv(GITHUB_ID) && System.getenv(GITHUB_SECRET)) {
             repositories {
                 maven {
-                    name = "GitHubPackages"
+                    name = "github"
                     url = "https://maven.pkg.github.com/${System.getenv(GITHUB_REPO)}"
                     credentials {
                         username = System.getenv(GITHUB_ID)
