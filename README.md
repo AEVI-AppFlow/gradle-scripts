@@ -29,15 +29,9 @@ Since git won't checkout submodules by default you'll need to make sure to check
 ```shell
 git clone --recurse-submodules
 ```
-For github actions you can use:
-```yaml
-- uses: actions/checkout@v2
-  with:
-    submodules: true
-```
 
 ## Publishing
-This script will automatically generate gradle tasks for all the [components](https://docs.gradle.org/current/userguide/dependency_management_terminology.html#sub:terminology_component) produced by a project. As such, in order to have it working for android apps you'll need to use the Android Gradle plugin 3.6.0 or later.
+This script will automatically generate gradle tasks for the publication of the libraries and APKs of your project
 
 ```groovy
 applyScript("publishingUtils")
@@ -47,9 +41,19 @@ This script relies on the following environment variables `AWS_ACCESS_KEY_ID` an
 * _qa_: s3://sdk-qa.aevi.com/maven2
 * _snapshot_: s3://sdk-snapshots.aevi.com/maven2
 
-It also has Github package publishing built-in support, assuming the build is being run from Github actions. In your Github actions file, the following command will effectively build and publish your app:
+It also has Github package publishing built-in support, assuming the build is being run from Github actions: 
+```shell
+./gradlew app:assembleRelease
+./gradlew app:publishReleasePublicationToGithub
 ```
-./gradlew app:publishAppReleaseApkPublicationToGithub
+
+Publications details can be configured from your build script:
+```groovy
+publishingUtils?.publication { variant ->
+    groupId "my.publication.group"
+    artifactId "my-app-$variant"
+    version "1.0.0"
+}
 ```
 
 ## Signing
@@ -78,17 +82,9 @@ For other signing configurations, until they eventually get added to the list of
 
 Signing configurations can be used in build files as shown below
 ```groovy
-buildTypes {
-    debug {
-        // For a local build you'll want to fallback to a sensible default
-        signingConfig signingUtils?.sdkDev() ?: signingConfig
-    }
-    release {
-        // For a release build you'll want the build to fail if it cannot be signed
-        signingConfig signingUtils?.sdkDev() ?: {}
-    }
+release {
+    signingConfig signingUtils?.sdkDev()
 }
-
 ```
 
 ## License

@@ -1,64 +1,101 @@
 apply plugin: "maven-publish"
 
-private static String camelCase(String value) {
-    value.split("[^a-zA-Z0-9]+").collect {it.capitalize() }.join()
-}
+class Publishing {
 
-String AWS_ID = "AWS_ACCESS_KEY_ID"
-String AWS_SECRET = "AWS_SECRET_ACCESS_KEY"
+    private static String AWS_ID = "AWS_ACCESS_KEY_ID"
+    private static String AWS_SECRET = "AWS_SECRET_ACCESS_KEY"
+    private static Map<String, String> AWS_REPOS = [
+            release: "s3://sdk-releases.aevi.com/maven2",
+            qa: "s3://sdk-qa.aevi.com/maven2",
+            snapshot: "s3://sdk-snapshots.aevi.com/maven2"
+    ];
 
-String GITHUB_REPO = "GITHUB_REPOSITORY"
-String GITHUB_ID = "GITHUB_ACTOR"
-String GITHUB_SECRET = "GITHUB_TOKEN"
+    private static String GITHUB_REPO = "GITHUB_REPOSITORY"
+    private static String GITHUB_ID = "GITHUB_ACTOR"
+    private static String GITHUB_SECRET = "GITHUB_TOKEN"
 
-publishing {
-    repositories {
-        if (System.getenv(AWS_ID) && System.getenv(AWS_SECRET)) {
-            maven {
-                name "release"
-                url "s3://sdk-releases.aevi.com/maven2"
-                credentials(AwsCredentials) {
-                    accessKey System.getenv(AWS_ID)
-                    secretKey System.getenv(AWS_SECRET)
-                }
-            }
-            maven {
-                name "qa"
-                url "s3://sdk-qa.aevi.com/maven2"
-                credentials(AwsCredentials) {
-                    accessKey System.getenv(AWS_ID)
-                    secretKey System.getenv(AWS_SECRET)
-                }
-            }
-            maven {
-                name = "snapshot"
-                url "s3://sdk-snapshots.aevi.com/maven2"
-                credentials(AwsCredentials) {
-                    accessKey System.getenv(AWS_ID)
-                    secretKey System.getenv(AWS_SECRET)
+    private static void githubRepo(RepositoryHandler handler) {
+        if (System.getenv(GITHUB_REPO) && System.getenv(GITHUB_ID) && System.getenv(GITHUB_SECRET)) {
+            handler.maven {
+                name = "github"
+                url = "https://maven.pkg.github.com/${System.getenv(GITHUB_REPO)}"
+                credentials {
+                    username = System.getenv(GITHUB_ID)
+                    password = System.getenv(GITHUB_SECRET)
                 }
             }
         }
-        if (System.getenv(GITHUB_REPO) && System.getenv(GITHUB_ID) && System.getenv(GITHUB_SECRET)) {
-            repositories {
-                maven {
-                    name = "github"
-                    url = "https://maven.pkg.github.com/${System.getenv(GITHUB_REPO)}"
-                    credentials {
-                        username = System.getenv(GITHUB_ID)
-                        password = System.getenv(GITHUB_SECRET)
+    }
+
+    private static void awsRepos(RepositoryHandler handler) {
+        if (System.getenv(AWS_ID) && System.getenv(AWS_SECRET)) {
+            AWS_REPOS.each { repoName, repoUrl ->
+                handler.maven {
+                    name repoName
+                    url repoUrl
+                    credentials(AwsCredentials) {
+                        accessKey System.getenv(AWS_ID)
+                        secretKey System.getenv(AWS_SECRET)
                     }
                 }
             }
         }
     }
-    afterEvaluate {
-        publications {
-            components.all { component ->
-                "${camelCase("${project.name}_${component.name}")}"(MavenPublication) {
-                    from component
+
+    private static Object androidVariants(Object android) {
+        if (android.hasProperty("applicationVariants")) {
+            return android.applicationVariants
+        } else if (android.hasProperty("libraryVariants")) {
+            return android.libraryVariants
+        } else {
+            return null
+        }
+    }
+
+    private static void androidPublications(PublicationContainer publications, Object android, Closure override) {
+        androidVariants(android).all { variant ->
+            variant.outputs.each { output ->
+                publications.create(variant.name, MavenPublication) {
+                    artifact output.outputFile
+                    override.delegate = it
+                    override(variant.baseName)
+                }
+            }
+        }
+    }
+
+    // Starting from version 3.6.0 the Android gradle plugin exposes standard gradle components that can be used
+    // for publication. This method could therefore potentially be used to also publish Android artifacts however APKs
+    // publications are getting bundle into a zip file...
+    private static void componentPublications(PublicationContainer publications, SoftwareComponentContainer components, Closure override) {
+        components.all { component ->
+            publications.create(component.name, MavenPublication) {
+                from component
+                override.delegate = it
+                override(component.name)
+            }
+        }
+    }
+
+    private static String camelCase(String value) {
+        value.split("[^a-zA-Z0-9]+").collect {it.capitalize() }.join()
+    }
+
+    static publication = { Closure override ->
+        delegate = override.delegate
+        publishing {
+            githubRepo(repositories)
+            awsRepos(repositories)
+
+            afterEvaluate {
+                if (project.hasProperty("android")) {
+                    androidPublications(publications, android, override)
+                } else {
+                    componentPublications(publications, components, override)
                 }
             }
         }
     }
 }
+
+project.extensions.create("publishingUtils", Publishing)
