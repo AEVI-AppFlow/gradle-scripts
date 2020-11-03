@@ -5,8 +5,8 @@ class Publishing {
     private static String AWS_ID = "AWS_ACCESS_KEY_ID"
     private static String AWS_SECRET = "AWS_SECRET_ACCESS_KEY"
     private static Map<String, String> AWS_REPOS = [
-            release: "s3://sdk-releases.aevi.com/maven2",
-            qa: "s3://sdk-qa.aevi.com/maven2",
+            release : "s3://sdk-releases.aevi.com/maven2",
+            qa      : "s3://sdk-qa.aevi.com/maven2",
             snapshot: "s3://sdk-snapshots.aevi.com/maven2"
     ];
 
@@ -78,24 +78,33 @@ class Publishing {
     }
 
     private static String camelCase(String value) {
-        value.split("[^a-zA-Z0-9]+").collect {it.capitalize() }.join()
+        value.split("[^a-zA-Z0-9]+").collect { it.capitalize() }.join()
     }
 
-    static publication = { Closure override ->
-        delegate = override.delegate
-        publishing {
+    protected Project project
+
+    Publishing(Project project) {
+        this.project = project
+    }
+
+    void publication(Closure override) {
+        project.publishing {
             githubRepo(repositories)
             awsRepos(repositories)
 
-            afterEvaluate {
-                if (project.hasProperty("android")) {
-                    androidPublications(publications, android, override)
+            this.project.afterEvaluate {
+                if (this.project.hasProperty("android")) {
+                    androidPublications(publications, this.project["android"], override)
                 } else {
-                    componentPublications(publications, components, override)
+                    componentPublications(publications, this.project.components, override)
                 }
             }
         }
     }
+
+    void repos(RepositoryHandler handler) {
+        awsRepos(handler)
+    }
 }
 
-project.extensions.create("publishingUtils", Publishing)
+project.extensions.create("publishingUtils", Publishing, project)

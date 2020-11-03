@@ -55,6 +55,12 @@ publishingUtils?.publication { variant ->
     version "1.0.0"
 }
 ```
+A list of all known AWS repository where to download the dependencies from can easily be added via the following:
+```groovy
+repositories {
+    publishingUtils?.repos(it)
+}
+``` 
 
 ## Signing
 
