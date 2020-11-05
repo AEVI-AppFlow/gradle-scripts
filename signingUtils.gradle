@@ -39,25 +39,32 @@ class Signing {
         return keystoreFile
     }
 
-    static config = { String name, String alias = "key" ->
-        resolvePropertiesOrFail (project, ["${name}_keystore", "${name}_keystore_password"]) { String keystore, String pwd ->
-            android.signingConfigs {
-                "$name" {
-                    storeFile registerKeystoreCreationTask(project, rootProject.buildDir, name, keystore)
-                    storePassword pwd
-                    keyAlias alias
-                    keyPassword pwd
+    protected Project project
+
+    Signing(Project project) {
+        this.project = project
+    }
+
+    Object config(String name, String alias = "key") {
+        return resolvePropertiesOrFail (project, ["${name}_keystore", "${name}_keystore_password"]) { String keystore, String pwd ->
+            if (!project.android.signingConfigs.hasProperty(name)) {
+                project.android.signingConfigs {
+                    "$name" {
+                        storeFile registerKeystoreCreationTask(project, project.rootProject.buildDir, name, keystore)
+                        storePassword pwd
+                        keyAlias alias
+                        keyPassword pwd
+                    }
                 }
             }
-            android.signingConfigs."$name"
+            project.android.signingConfigs."$name"
         }
     }
 
-    static albert = { -> Signing.config("albert_app", "application") }
-    static albertPlatform = { -> Signing.config("albert_platform", "system_apps_platform_developer") }
-    static aosp = { -> Signing.config("aosp_platform") }
-    static sdkDev = { -> Signing.config("sdk_dev") }
+    Object albert() { return config("albert_app", "application") }
+    Object albertPlatform() { return config("albert_platform", "system_apps_platform_developer") }
+    Object aosp() { return config("aosp_platform") }
+    Object sdkDev() { return config("sdk_dev") }
 }
 
-Signing.config.delegate = this
-project.extensions.create("signingUtils", Signing)
+project.extensions.create("signingUtils", Signing, project)
