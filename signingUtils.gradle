@@ -1,27 +1,9 @@
+apply from: new File(buildscript.sourceFile.parentFile, "propertyUtils.gradle")
+
 class Signing {
 
     private static String camelCase(String value) {
-        value.split("[^a-zA-Z0-9]+").collect {it.capitalize() }.join()
-    }
-
-    private static resolveProperty(String name, Object target) {
-        if (target.hasProperty(name)) {
-            return target.property(name);
-        } else if (System.getenv(name.toUpperCase())) {
-            return System.getenv(name.toUpperCase());
-        } else {
-            return null;
-        }
-    }
-
-    private static resolvePropertiesOrFail(Project project, List<String> names, Closure closure) {
-        List<String> values = names.collect {resolveProperty(it, project) }
-        int nullIndex = values.findLastIndexOf { it == null }
-        if (nullIndex < 0) {
-            return closure(*values)
-        } else {
-            throw new GradleException("Failed to resolve property: " + names[nullIndex])
-        }
+        value.split("[^a-zA-Z0-9]+").collect { it.capitalize() }.join()
     }
 
     private static registerKeystoreCreationTask(Project project, File buildDir, String name, String keystore) {
@@ -46,7 +28,7 @@ class Signing {
     }
 
     Object config(String name, String alias = "key") {
-        return resolvePropertiesOrFail (project, ["${name}_keystore", "${name}_keystore_password"]) { String keystore, String pwd ->
+        return project.propertyUtils.resolve(["${name}_keystore", "${name}_keystore_password"]) { String keystore, String pwd ->
             if (!project.android.signingConfigs.hasProperty(name)) {
                 project.android.signingConfigs {
                     "$name" {
@@ -61,10 +43,16 @@ class Signing {
         }
     }
 
-    Object albert() { return config("albert_app", "application") }
-    Object albertPlatform() { return config("albert_platform", "system_apps_platform_developer") }
-    Object aosp() { return config("aosp_platform") }
-    Object sdkDev() { return config("sdk_dev") }
+    Object getAlbert() { return config("albert_app", "application") }
+
+    Object getAlbertPlatform() { return config("albert_platform", "system_apps_platform_developer") }
+
+    Object getAosp() { return config("aosp_platform") }
+
+    Object getSdkDev() { return config("sdk_dev") }
 }
 
-project.extensions.create("signingUtils", Signing, project)
+String myself = buildscript.sourceFile.name.replace(".gradle", "")
+if (!project.extensions.findByName(myself)) {
+    project.extensions.create(myself, Signing, project)
+}

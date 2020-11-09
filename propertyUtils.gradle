@@ -1,0 +1,29 @@
+class Property {
+
+    static resolve(String name, Object target) {
+        if (target.hasProperty(name)) {
+            return target.property(name)
+        } else if (System.getenv(name.toUpperCase())) {
+            return System.getenv(name.toUpperCase())
+        } else {
+            return null
+        }
+    }
+
+    def <T> T resolve(List<String> names, Closure<T> closure) {
+        List<String> values = names.collect { resolve(it, this.project) }
+        int nullIndex = values.findLastIndexOf { it == null }
+        return nullIndex < 0 ? closure(*values) : null
+    }
+
+    protected Project project
+
+    Property(Project project) {
+        this.project = project
+    }
+}
+
+String myself = buildscript.sourceFile.name.replace(".gradle", "")
+if (!project.extensions.findByName(myself)) {
+    project.extensions.create(myself, Property, project)
+}

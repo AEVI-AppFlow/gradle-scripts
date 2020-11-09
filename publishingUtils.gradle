@@ -1,41 +1,42 @@
 apply plugin: "maven-publish"
+apply from: new File(buildscript.sourceFile.parentFile, "propertyUtils.gradle")
 
 class Publishing {
 
-    private static String AWS_ID = "AWS_ACCESS_KEY_ID"
-    private static String AWS_SECRET = "AWS_SECRET_ACCESS_KEY"
+    private static String AWS_ID = "aws_access_key_id"
+    private static String AWS_SECRET = "aws_secret_access_key"
     private static Map<String, String> AWS_REPOS = [
             release : "s3://sdk-releases.aevi.com/maven2",
             qa      : "s3://sdk-qa.aevi.com/maven2",
             snapshot: "s3://sdk-snapshots.aevi.com/maven2"
-    ];
+    ]
 
-    private static String GITHUB_REPO = "GITHUB_REPOSITORY"
-    private static String GITHUB_ID = "GITHUB_ACTOR"
-    private static String GITHUB_SECRET = "GITHUB_TOKEN"
+    private static String GITHUB_REPO = "github_repository"
+    private static String GITHUB_ID = "github_actor"
+    private static String GITHUB_SECRET = "github_token"
 
-    private static void githubRepo(RepositoryHandler handler) {
-        if (System.getenv(GITHUB_REPO) && System.getenv(GITHUB_ID) && System.getenv(GITHUB_SECRET)) {
+    private static githubRepo(Project project, RepositoryHandler handler) {
+        project.propertyUtils.resolve([GITHUB_REPO, GITHUB_ID, GITHUB_SECRET]) { repo, id, secret ->
             handler.maven {
                 name = "github"
-                url = "https://maven.pkg.github.com/${System.getenv(GITHUB_REPO)}"
+                url = "https://maven.pkg.github.com/$repo"
                 credentials {
-                    username = System.getenv(GITHUB_ID)
-                    password = System.getenv(GITHUB_SECRET)
+                    username = id
+                    password = secret
                 }
             }
         }
     }
 
-    private static void awsRepos(RepositoryHandler handler) {
-        if (System.getenv(AWS_ID) && System.getenv(AWS_SECRET)) {
+    private static awsRepos(Project project, RepositoryHandler handler) {
+        project.propertyUtils.resolve([AWS_ID, AWS_SECRET]) { access, secret ->
             AWS_REPOS.each { repoName, repoUrl ->
                 handler.maven {
                     name repoName
                     url repoUrl
                     credentials(AwsCredentials) {
-                        accessKey System.getenv(AWS_ID)
-                        secretKey System.getenv(AWS_SECRET)
+                        accessKey access
+                        secretKey secret
                     }
                 }
             }
@@ -77,10 +78,6 @@ class Publishing {
         }
     }
 
-    private static String camelCase(String value) {
-        value.split("[^a-zA-Z0-9]+").collect { it.capitalize() }.join()
-    }
-
     protected Project project
 
     Publishing(Project project) {
@@ -89,8 +86,8 @@ class Publishing {
 
     void publication(Closure override) {
         project.publishing {
-            githubRepo(repositories)
-            awsRepos(repositories)
+            githubRepo(this.project, repositories)
+            awsRepos(this.project, repositories)
 
             this.project.afterEvaluate {
                 if (this.project.hasProperty("android")) {
@@ -103,8 +100,11 @@ class Publishing {
     }
 
     void repos(RepositoryHandler handler) {
-        awsRepos(handler)
+        awsRepos(project, handler)
     }
 }
 
-project.extensions.create("publishingUtils", Publishing, project)
+String myself = buildscript.sourceFile.name.replace(".gradle", "")
+if (!project.extensions.findByName(myself)) {
+    project.extensions.create(myself, Publishing, project)
+}

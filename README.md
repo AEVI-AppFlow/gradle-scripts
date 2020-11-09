@@ -30,6 +30,11 @@ Since git won't checkout submodules by default you'll need to make sure to check
 git clone --recurse-submodules
 ```
 
+### Environment variables
+
+Whenever the scripts of this project read out an environment variable, they will first try to load it from a local project property using the corresponding lower case name (ie: `my_variable` in place of `MY_VARIABLE`) before attempting to read it out from the process environment. This gives the ability to define them in a gradle property file on development machines.
+
+
 ## Publishing
 This script will automatically generate gradle tasks for the publication of the libraries and APKs of your project
 
@@ -75,21 +80,18 @@ Signing information is still expected to be passed through environment variables
 
 Note that the key alias being used is expected to be `key` and the key password is expected to be the same than the keystore password.
 
-Alternatively, if a macthing environment variable can't be found, the script will look up for a lower case project property instead (ie: `[name]_keystore` and `[name]_keystore_Password`). This gives the ability to define them in a gradle property file instead.
-
-
 This script has the following predefined signing configurations you can use:
-* __`signingUtils.albert()`__ relying on `ALBERT_APP_xxx`
-* __`signingUtils.albertPlatform()`__ relying on `ALBERT_PLATFORM_xxx`
-* __`signingUtils.aosp()`__ relying on `AOSP_PLATFORM_xxx`
-* __`signingUtils.sdkDev()`__ relying on `SDK_DEV_xxx`
+* __`signingUtils.albert`__ relying on `ALBERT_APP_xxx`
+* __`signingUtils.albertPlatform`__ relying on `ALBERT_PLATFORM_xxx`
+* __`signingUtils.aosp`__ relying on `AOSP_PLATFORM_xxx`
+* __`signingUtils.sdkDev`__ relying on `SDK_DEV_xxx`
 
 For other signing configurations, until they eventually get added to the list of prebuilt ones, you can use `signingUtils.config([name])`, assuming the environment variables: `[name]_KEYSTORE` and `[name]_KEYSTORE_PASSWORD` have been defined.
 
 Signing configurations can be used in build files as shown below
 ```groovy
 release {
-    signingConfig signingUtils?.sdkDev()
+    signingConfig signingUtils?.sdkDev
 }
 ```
 
