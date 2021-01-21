@@ -23,7 +23,6 @@ class Property {
     }
 }
 
-String myself = buildscript.sourceFile.name.replace(".gradle", "")
-if (!project.extensions.findByName(myself)) {
-    project.extensions.create(myself, Property, project)
+if (!project.extensions.findByName("propertyUtils")) {
+    project.extensions.create("propertyUtils", Property, project)
 }

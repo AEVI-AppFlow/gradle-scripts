@@ -1,0 +1,45 @@
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+
+task updateGradlePropertiesVersion {
+    doLast {
+        def major = project.properties['new_version_major'] ?: version_major
+        def minor = project.properties['new_version_minor'] ?: version_minor
+        def patch = project.properties['new_version_patch'] ?: version_patch
+        def suffix = project.properties['new_version_suffix'] ?: ""
+        def build_counter = project.properties['new_version_build_counter'] ?: 1
+        ant.propertyfile(file: "gradle.properties") {
+            entry(key: "version_major", value: major)
+            entry(key: "version_minor", value: minor)
+            entry(key: "version_patch", value: patch)
+            entry(key: "version_suffix", value: suffix)
+            entry(key: "version_build_counter", value: build_counter)
+        }
+    }
+}
+
+task incrementBuildCounter {
+    doLast {
+        def build_counter = (version_build_counter as Integer) + 1
+        ant.propertyfile(file: "gradle.properties") {
+            entry(key: "version_build_counter", value: build_counter)
+        }
+    }
+}
+
+task verifyTagVersionMatchesGradleProperties {
+    doLast {
+        def tagMajor = project.properties['tag_version_major']
+        def tagMinor = project.properties['tag_version_minor']
+        def tagPatch = project.properties['tag_version_patch']
+
+        def propMajor = project.properties['version_major']
+        def propMinor = project.properties['version_minor']
+        def propPatch = project.properties['version_patch']
+
+        if (tagMajor != propMajor || tagMinor != propMinor || tagPatch != propPatch) {
+            throw new GradleException('Tag version does not match gradle.properties')
+        }
+    }
+}

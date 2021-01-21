@@ -1,71 +1,61 @@
 # Gradle scripts
 
-A set of utility scripts to help with the publishing and signing of artifacts.
+A set of re-usable Gradle scripts for Android apps and libraries.
 
-## Usage
-Until this project gets eventually turned into a proper Gradle plugin the recommended way to use the scripts of this repository is via git submodules.
+## Importing
 
-From your project directory, start by checking out the latest version of this repository as a submodule:
-```shell
-git submodule add git@github.com:Aevi-UK/gradle-scripts.git
+Update your root `build.gradle` as per below.
+
+1. Add sdk releases as a buildscript repository
 ```
-
-The scripts should now be part of your project and located in the `gradle-script` directory. In the main gradle file of your project, we recommend adding the following:
-```groovy
-subprojects {
-    ext.applyScript = { String script ->
-        try {
-            apply from: new File(rootDir, "gradle-scripts/${script}.gradle").path
-        } catch (Exception e) {
-            ext."${script}" = null
-            project.logger.log(LogLevel.WARN, e.message)
+        maven {
+            url "s3://sdk-releases.aevi.com/maven2"
+            credentials(AwsCredentials) {
+                accessKey aws_accessid
+                secretKey aws_accesskey
+            }
         }
-    }
+```
+
+2. Add gradle-scripts as a buildscript dependency
+```
+classpath 'com.aevi.sdk.build:gradle-scripts:<version>'
+```
+
+3. Add a lambda at root of file
+```
+ext.gradleScript = { path ->
+    return rootProject.buildscript.classLoader.getResource(path).toURI()
 }
 ```
-This is a utility function which will allow you to conditionally load scripts from this repository only if they exist, therefore preventing the need to necessarily have to check them out on developer machines or to have to publicly share them when used in public repositories. The idea being a project should always be compileable with our without them.
 
-Since git won't checkout submodules by default you'll need to make sure to checkout your project sources with the `--recurse-submodules` option from your CI script:
-```shell
-git clone --recurse-submodules
+4. Apply root scripts
+```
+apply from: gradleScript('root/common-tasks.gradle')
+apply from: gradleScript('root/repositories.gradle')
 ```
 
-### Environment variables
-
-Whenever the scripts of this project read out an environment variable, they will first try to load it from a local project property using the corresponding lower case name (ie: `my_variable` in place of `MY_VARIABLE`) before attempting to read it out from the process environment. This gives the ability to define them in a gradle property file on development machines.
-
-
-## Publishing
-This script will automatically generate gradle tasks for the publication of the libraries and APKs of your project
-
-```groovy
-applyScript("publishingUtils")
+5. In your app/lib modules build.gradle
+Define required variables
 ```
-This script relies on the following environment variables `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` in order to generate publications for the following repositories:
-* _release_: s3://sdk-releases.aevi.com/maven2
-* _qa_: s3://sdk-qa.aevi.com/maven2
-* _snapshot_: s3://sdk-snapshots.aevi.com/maven2
-
-It also has Github package publishing built-in support, assuming the build is being run from Github actions: 
-```shell
-./gradlew app:assembleRelease
-./gradlew app:publishReleasePublicationToGithub
+ext.applicationId = "com.aevi.XXX"
+ext.applicationName = "YourAppName"
+ext.applicationTargetSdkVersion = <target>
+ext.applicationMinSdkVersion = <min>
 ```
 
-Publications details can be configured from your build script:
-```groovy
-publishingUtils?.publication { variant ->
-    groupId "my.publication.group"
-    artifactId "my-app-$variant"
-    version "1.0.0"
-}
+6. Apply relevant scripts
 ```
-A list of all known AWS repository where to download the dependencies from can easily be added via the following:
-```groovy
-repositories {
-    publishingUtils?.repos(it)
-}
-``` 
+apply from: gradleScript('android/artifacts.gradle')
+apply from: gradleScript('android/versioning.gradle')
+apply from: gradleScript('android/basic-android.gradle')
+apply from: gradleScript('android/signing-utils.gradle')
+```
+
+7. Define/override Android settings as required
+- Build types
+- Flavors
+- Etc
 
 ## Signing
 

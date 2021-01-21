@@ -1,4 +1,4 @@
-apply from: new File(buildscript.sourceFile.parentFile, "propertyUtils.gradle")
+apply from: rootProject.buildscript.classLoader.getResource('android/property-utils.gradle').toURI()
 
 class Signing {
 
@@ -52,7 +52,6 @@ class Signing {
     Object getSdkDev() { return config("sdk_dev") }
 }
 
-String myself = buildscript.sourceFile.name.replace(".gradle", "")
-if (!project.extensions.findByName(myself)) {
-    project.extensions.create(myself, Signing, project)
+if (!project.extensions.findByName("signingUtils")) {
+    project.extensions.create("signingUtils", Signing, project)
 }

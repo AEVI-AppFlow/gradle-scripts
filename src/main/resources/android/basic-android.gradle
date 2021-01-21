@@ -1,0 +1,28 @@
+android {
+    compileSdkVersion applicationTargetSdkVersion
+
+    defaultConfig {
+        applicationId applicationId
+        minSdkVersion applicationMinSdkVersion
+        targetSdkVersion applicationTargetSdkVersion
+        versionCode applicationVersionCode
+        versionName applicationVersionName
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
+
+}
+

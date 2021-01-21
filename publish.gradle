@@ -1,0 +1,39 @@
+apply plugin: 'maven-publish'	
+apply plugin: 'java-library'
+
+publishing {	
+    repositories {	
+            maven {	
+                name 'release'	
+                url "s3://sdk-releases.aevi.com/maven2"	
+                credentials(AwsCredentials) {
+                    accessKey "${aws_accessid}"
+                    secretKey "${aws_accesskey}"
+                }
+            }	
+            maven {	
+                name 'qa'	
+                url "s3://sdk-qa.aevi.com/maven2"	
+                credentials(AwsCredentials) {
+                    accessKey "${aws_accessid}"
+                    secretKey "${aws_accesskey}"
+                }
+            }	
+            maven {	
+                name 'snapshot'	
+                url "s3://sdk-snapshots.aevi.com/maven2"	
+                credentials(AwsCredentials) {	
+                    accessKey "${aws_accessid}"	
+                    secretKey "${aws_accesskey}"	
+                }	
+            }	
+    }
+    publications {
+        gradleJar(MavenPublication) {
+            version = rootProject.version
+            artifactId = rootProject.name
+            groupId = rootProject.group
+            from components.java
+        }
+    }	
+} 

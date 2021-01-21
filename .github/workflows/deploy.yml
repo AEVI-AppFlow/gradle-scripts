@@ -1,0 +1,28 @@
+name: Deploy jar
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Cache Gradle Dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Publish jar
+        run: ./gradlew publishGradleJarPublicationToReleaseRepository -Paws_accessid=${{secrets.AWS_ACCESS_KEY_ID}} -Paws_accesskey=${{secrets.AWS_SECRET_ACCESS_KEY}}
+

@@ -1,0 +1,31 @@
+allprojects {
+    repositories {
+        google()
+        jcenter()
+        maven {
+            url "http://dl.bintray.com/aevi/aevi-uk"
+        }
+        maven {
+            url "s3://sdk-releases.aevi.com/maven2"
+            credentials(AwsCredentials) {
+                accessKey aws_accessid
+                secretKey aws_accesskey
+            }
+        }
+        maven {
+            url "s3://sdk-qa.aevi.com/maven2"
+            credentials(AwsCredentials) {
+                accessKey aws_accessid
+                secretKey aws_accesskey
+            }
+        }
+        mavenLocal()
+        maven {
+            url "s3://sdk-snapshots.aevi.com/maven2"
+            credentials(AwsCredentials) {
+                accessKey aws_accessid
+                secretKey aws_accesskey
+            }
+        }
+    }
+}

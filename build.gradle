@@ -1,0 +1,5 @@
+apply plugin: 'java-library'
+group = 'com.aevi.sdk.build'
+version = '1.0.0'
+
+apply from: 'publish.gradle'

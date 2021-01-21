@@ -1,0 +1,9 @@
+android.applicationVariants.all { variant ->
+    variant.outputs.all { output ->
+        def newApkName = "${applicationName}-${variant.name.capitalize()}-${variant.versionName}.apk"
+        outputFileName = new File(newApkName)
+        task "writeApkFilePathFor${variant.name.capitalize()}"(type: Exec) {
+            commandLine 'echo', "::set-output name=apk_path_${variant.name}::${output.outputFile}"
+        }
+    }
+}
