@@ -1,0 +1,1 @@
+ext.libraryVersion = "$version_major.$version_minor.$version_patch$version_suffix"

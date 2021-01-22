@@ -1,5 +1,6 @@
 apply plugin: 'java-library'
 apply plugin: 'maven-publish'
+apply from: rootProject.buildscript.classLoader.getResource('lib/publishing-repos.gradle').toURI()
 
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = 'sources'
@@ -13,8 +14,8 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 
 publishing {
     publications {
-        apiJar(MavenPublication) {
-            version = rootProject.apiVersion
+        jar(MavenPublication) {
+            version = project.version
             artifactId = project.name
             groupId = project.group
             from components.java
