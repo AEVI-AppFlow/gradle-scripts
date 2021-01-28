@@ -19,6 +19,20 @@ task updateGradlePropertiesVersion {
     }
 }
 
+task prepareForNextRelease {
+    doLast {
+        def patch = (version_patch as Integer) + 1
+        def suffix = "-SNAPSHOT"
+        def build_counter = 1
+        ant.propertyfile(file: "gradle.properties") {
+            entry(key: "version_patch", value: patch)
+            entry(key: "version_suffix", value: suffix)
+            entry(key: "version_build_counter", value: build_counter)
+        }
+    }
+}
+
+
 task incrementBuildCounter {
     doLast {
         def build_counter = (version_build_counter as Integer) + 1
