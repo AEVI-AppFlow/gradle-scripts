@@ -3,7 +3,7 @@ def awsAccessKey = null
 if (project.hasProperty('aws_accessid')) {
     awsAccessId = aws_accessid
     awsAccessKey = aws_accesskey
-} else if (System.getenv("AWS_ACCESS_KEY_ID" != null)) {
+} else if (System.getenv("AWS_ACCESS_KEY_ID") != null) {
     awsAccessId = System.getenv("AWS_ACCESS_KEY_ID")
     awsAccessKey = System.getenv("AWS_SECRET_ACCESS_KEY")
 }
