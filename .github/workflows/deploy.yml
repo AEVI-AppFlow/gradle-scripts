@@ -24,5 +24,9 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: Publish jar
-        run: ./gradlew publishGradleJarPublicationToReleaseRepository -Paws_accessid=${{secrets.AWS_ACCESS_KEY_ID}} -Paws_accesskey=${{secrets.AWS_SECRET_ACCESS_KEY}}
+        run: |
+          ./gradlew publishJavaPublicationToReleaseRepository -Paws_accessid=${{secrets.AWS_ACCESS_KEY_ID}} -Paws_accesskey=${{secrets.AWS_SECRET_ACCESS_KEY}}
+          ./gradlew publishJavaPublicationToGithubRepository
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

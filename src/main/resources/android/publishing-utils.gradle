@@ -1,5 +1,11 @@
 apply plugin: "maven-publish"
-apply from: new File(buildscript.sourceFile.parentFile, "propertyUtils.gradle")
+def propUtilsViaClassLoader = rootProject.buildscript.classLoader.getResource('android/property-utils.gradle');
+if (propUtilsViaClassLoader != null) {
+    apply from: propUtilsViaClassLoader.toURI()
+} else {
+    apply from: new File(buildscript.sourceFile.parentFile, "property-utils.gradle")
+}
+
 
 class Publishing {
 
@@ -104,7 +110,6 @@ class Publishing {
     }
 }
 
-String myself = buildscript.sourceFile.name.replace(".gradle", "")
-if (!project.extensions.findByName(myself)) {
-    project.extensions.create(myself, Publishing, project)
+if (!project.extensions.findByName("publishingUtils")) {
+    project.extensions.create("publishingUtils", Publishing, project)
 }
