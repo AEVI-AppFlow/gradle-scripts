@@ -48,22 +48,22 @@ allprojects {
             maven {
                 url "s3://sdk-releases.aevi.com/maven2"
                 credentials(AwsCredentials) {
-                    accessKey aws_accessid
-                    secretKey aws_accesskey
+                    accessKey awsAccessId
+                    secretKey awsAccessKey
                 }
             }
             maven {
                 url "s3://sdk-qa.aevi.com/maven2"
                 credentials(AwsCredentials) {
-                    accessKey aws_accessid
-                    secretKey aws_accesskey
+                    accessKey awsAccessId
+                    secretKey awsAccessKey
                 }
             }
             maven {
                 url "s3://sdk-snapshots.aevi.com/maven2"
                 credentials(AwsCredentials) {
-                    accessKey aws_accessid
-                    secretKey aws_accesskey
+                    accessKey awsAccessId
+                    secretKey awsAccessKey
                 }
             }
         }
