@@ -10,7 +10,7 @@ android {
         }
         unsigned {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro', 'proguard-rules-production.pro'
             signingConfig null
         }
     }
