@@ -36,7 +36,7 @@ apply from: gradleScript('root/repositories.gradle')
 ```
 
 5. In your app/lib modules build.gradle
-Define required variables
+   Define required variables
 ```
 ext.applicationId = "com.aevi.XXX"
 ext.applicationName = "YourAppName"
@@ -57,12 +57,55 @@ apply from: gradleScript('android/signing-utils.gradle')
 - Flavors
 - Etc
 
+## Versioning
+```groovy
+applyScript("root/versioningUtils")
+```
+This script defines a number of variable in order to help with the versioning, notably `versioningUtils.versionCode` and `versioningUtils.versionName` these are inferred from the project's gradle property file: `version_major`, `version_minor` and `version_patch`
+If the current commit of your repository has been tagged a version suffix and build counter will be automatically inferred. Git tags are expected to follow the below format:
+* `[major].[minor].[patch]` for final releases
+* `[major].[minor].[patch]-[build-type].[counter]` for alpha, beta and RC builds
+
+Note that if the version defined in your project's property file doesn't match the one in the Git tag the build will be aborted.
+
+## Publishing
+This script will automatically generate gradle tasks for the publication of the libraries and APKs of your project
+
+```groovy
+applyScript("android/publishingUtils")
+```
+This script relies on the following environment variables `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` in order to generate publications for the following repositories:
+* _release_: s3://sdk-releases.aevi.com/maven2
+* _qa_: s3://sdk-qa.aevi.com/maven2
+* _snapshot_: s3://sdk-snapshots.aevi.com/maven2
+
+It also has Github package publishing built-in support, assuming the build is being run from Github actions:
+```shell
+./gradlew app:assembleRelease
+./gradlew app:publishReleasePublicationToGithub
+```
+
+Publications details can be configured from your build script:
+```groovy
+publishingUtils.publication { variant ->
+    groupId "my.publication.group"
+    artifactId "my-app-$variant"
+    version "1.0.0"
+}
+```
+A list of all known AWS repository where to download the dependencies from can easily be added via the following:
+```groovy
+repositories {
+    publishingUtils.repos(it)
+}
+``` 
+
 ## Signing
 
 This script provides some predefined signing configurations that can be used into your build files.
 
 ```groovy
-applyScript("signingUtils")
+applyScript("android/signingUtils")
 ```
 Signing information is still expected to be passed through environment variables. For a given signing configuration, the following 2 environement variables are expected to be set:
 * `[name]_KEYSTORE`: the base64 encoded keystore to use
@@ -80,13 +123,13 @@ For other signing configurations, until they eventually get added to the list of
 
 Signing configurations can be used in build files as shown below
 ```groovy
-release {
-    signingConfig signingUtils?.sdkDev
+debug {
+    signingConfig signingUtils.sdkDev ?: signingConfig
 }
 ```
 
 ## License
 
-Copyright (c) 2020 AEVI International GmbH. All rights reserved
+Copyright (c) 2021 AEVI International GmbH. All rights reserved
 Unauthorized copying or distribution of this project, via any medium is strictly prohibited
 Proprietary and confidential
