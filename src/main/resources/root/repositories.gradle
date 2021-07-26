@@ -41,7 +41,7 @@ allprojects {
             }
         }
         maven {
-            url "http://dl.bintray.com/aevi/aevi-uk"
+            url "https://dl.bintray.com/aevi/aevi-uk"
         }
         mavenLocal()
         if (awsAccessId != null) {
