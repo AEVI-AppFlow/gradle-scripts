@@ -61,7 +61,7 @@ class Versioning {
             String tagSuffix = matcher.group(4)
             if (tagSuffix != null) {
                 // A suffix was found in the tag version, we infer the build number based on the suffix
-                suffix = tagSuffix
+                suffix = "-$tagSuffix"
                 buildCounter = parseBuildNumber(tagSuffix)
             } else {
                 // No suffix was found in the tag version, we therefore assume it is a final release
