@@ -33,6 +33,6 @@ jobs:
       - name: Publish jar
         if: env.TAG != ''
         run: |
-          ./gradlew publishJavaPublicationToReleaseRepository publishJavaPublicationToGithubRepository
+          ./gradlew publishJavaPublicationToGithubRepository
 
 
