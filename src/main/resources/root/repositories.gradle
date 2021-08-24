@@ -40,11 +40,15 @@ allprojects {
                 }
             }
         }
-        maven {
-            url "https://dl.bintray.com/aevi/aevi-uk"
-        }
         mavenLocal()
         if (awsAccessId != null) {
+            maven {
+                url "s3://sdk-public-artifacts/maven2"
+                credentials(AwsCredentials) {
+                    accessKey awsAccessId
+                    secretKey awsAccessKey
+                }
+            }
             maven {
                 url "s3://sdk-releases.aevi.com/maven2"
                 credentials(AwsCredentials) {
