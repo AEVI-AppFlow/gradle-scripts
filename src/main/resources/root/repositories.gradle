@@ -21,7 +21,6 @@ if (project.hasProperty('gh_username')) {
 allprojects {
     repositories {
         google()
-        jcenter()
         if (githubUsername != null) {
             maven {
                 name = "github-aevi-uk"
