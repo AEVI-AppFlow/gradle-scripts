@@ -2,7 +2,7 @@ apply plugin: 'java-library'
 group = 'com.aevi.sdk.build'
 ext.version_major = 1
 ext.version_minor = 1
-ext.version_patch = 2
+ext.version_patch = 3
 
 apply from: 'src/main/resources/root/versioning-utils.gradle'
 apply from: 'src/main/resources/android/publishing-utils.gradle'
@@ -12,3 +12,6 @@ publishingUtils.publication {
     artifactId project.name
     version versioningUtils.versionName
 }
+
+sourceCompatibility = "1.8"
+targetCompatibility = "1.8"
