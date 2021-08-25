@@ -40,10 +40,10 @@ allprojects {
             }
         }
         mavenLocal()
+        maven {
+            url uri("https://sdk-public-artifacts.s3.eu-west-1.amazonaws.com/maven2")
+        }
         if (awsAccessId != null) {
-            maven {
-                url uri("https://sdk-public-artifacts.s3.eu-west-1.amazonaws.com/maven2")
-            }
             maven {
                 url "s3://sdk-releases.aevi.com/maven2"
                 credentials(AwsCredentials) {
