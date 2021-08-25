@@ -42,11 +42,7 @@ allprojects {
         mavenLocal()
         if (awsAccessId != null) {
             maven {
-                url "s3://sdk-public-artifacts/maven2"
-                credentials(AwsCredentials) {
-                    accessKey awsAccessId
-                    secretKey awsAccessKey
-                }
+                url uri("https://sdk-public-artifacts.s3.eu-west-1.amazonaws.com/maven2")
             }
             maven {
                 url "s3://sdk-releases.aevi.com/maven2"
