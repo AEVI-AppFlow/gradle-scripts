@@ -2,7 +2,7 @@ apply plugin: 'java-library'
 group = 'com.aevi.sdk.build'
 ext.version_major = 1
 ext.version_minor = 1
-ext.version_patch = 7
+ext.version_patch = 8
 
 apply from: 'src/main/resources/root/versioning-utils.gradle'
 apply from: 'src/main/resources/android/publishing-utils.gradle'
