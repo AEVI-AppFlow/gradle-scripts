@@ -1,15 +1,17 @@
-buildTypes {
-    debug {
-        signingConfig signingConfigs.sdkDev ?: signingConfig
-    }
-    release {
-        minifyEnabled false
-        proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        signingConfig signingConfigs.sdkDev
-    }
-    unsigned {
-        minifyEnabled false
-        proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro', 'proguard-rules-production.pro'
-        signingConfig null
+android {
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.sdkDev ?: signingConfig
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.sdkDev
+        }
+        unsigned {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro', 'proguard-rules-production.pro'
+            signingConfig null
+        }
     }
 }
