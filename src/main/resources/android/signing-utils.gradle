@@ -1,5 +1,9 @@
 apply from: rootProject.buildscript.classLoader.getResource('android/property-utils.gradle').toURI()
 
+/**
+ * DEPRECATED! Please use sdk-dev-signing-config.gradle etc instead
+ */
+@Deprecated
 class Signing {
 
     private static String camelCase(String value) {
@@ -45,7 +49,9 @@ class Signing {
 
     Object getAlbert() { return config("albert_app", "application") }
 
-    Object getAlbertPlatform() { return config("albert_platform", "system_apps_platform_developer") }
+    Object getAlbertPlatform() {
+        return config("albert_platform", "system_apps_platform_developer")
+    }
 
     Object getAosp() { return config("aosp_platform") }
 

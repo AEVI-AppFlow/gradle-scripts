@@ -1,0 +1,42 @@
+def sdkDevKeyStorePath = null
+def sdkDevKeyPassword = null;
+
+// For local signing, look for a property from gradle.properties
+if (project.hasProperty('sdk_dev_keystore_path')) {
+    sdkDevKeyStorePath = sdk_dev_keystore_path
+    sdkDevKeyPassword = sdk_dev_keystore_password
+}
+// For CI use, where there is direct access to the keystore on the filesystem
+else if (System.getenv("SDK_DEV_KEYSTORE_PATH") != null) {
+    sdkDevKeyStorePath = System.getenv("SDK_DEV_KEYSTORE_PATH")
+    sdkDevKeyPassword = System.getenv("SDK_DEV_KEYSTORE_PASSWORD")
+}
+// For CI use, where the content of the keystore is in an env var, we write it to file
+else if (System.getenv("SDK_DEV_KEYSTORE") != null) {
+    def keystore = System.getenv("SDK_DEV_KEYSTORE")
+    def keystoreFile = new File("${project.rootProject.buildDir}/sdkDev.jks")
+    sdkDevKeyStorePath = keystoreFile.absolutePath
+    sdkDevKeyPassword = System.getenv("SDK_DEV_KEYSTORE_PASSWORD")
+    task writeSdkDevKeystoreToPath() {
+        doLast {
+            if (!keystoreFile.exists()) {
+                keystoreFile.parentFile.mkdirs()
+                keystoreFile << keystore.decodeBase64()
+            }
+        }
+    }
+    project.tasks.preBuild.dependsOn writeSdkDevKeystoreToPath
+} else {
+    throw new Exception('Unable to locate sdkDev key path or content - please set relevant properties/env variables')
+}
+
+android {
+    signingConfigs {
+        sdkDev {
+            storeFile file(sdkDevKeyStorePath)
+            storePassword sdkDevKeyPassword
+            keyAlias "key"
+            keyPassword sdkDevKeyPassword
+        }
+    }
+}

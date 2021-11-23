@@ -102,6 +102,8 @@ repositories {
 
 ## Signing
 
+The approach detailed here is **DEPRECATED**!
+
 This script provides some predefined signing configurations that can be used into your build files.
 
 ```groovy

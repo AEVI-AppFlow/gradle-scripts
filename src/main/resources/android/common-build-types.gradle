@@ -1,3 +1,5 @@
+// DEPRECATED! Please move over to new signing approach and use v2 instead
+
 android {
     buildTypes {
         debug {
