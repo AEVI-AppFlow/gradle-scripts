@@ -1,3 +1,5 @@
+package publish
+
 class Property {
 
     static resolve(String name, Object target) {

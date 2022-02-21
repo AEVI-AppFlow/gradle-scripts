@@ -8,13 +8,14 @@ Update your root `build.gradle` as per below.
 
 1. Add sdk releases as a buildscript repository
 ```
-        maven {
-            url "s3://sdk-releases.aevi.com/maven2"
-            credentials(AwsCredentials) {
-                accessKey aws_accessid
-                secretKey aws_accesskey
-            }
-        }
+   maven {
+           name = "github-aevi-uk"
+           url = uri("https://maven.pkg.github.com/aevi-uk/gradle-scripts")
+           credentials {
+               username = System.getenv("GITHUB_ACTOR") ?: gh_username
+               password = System.getenv("GITHUB_TOKEN") ?: gh_token
+           }
+   }
 ```
 
 2. Add gradle-scripts as a buildscript dependency
@@ -49,7 +50,7 @@ ext.applicationMinSdkVersion = <min>
 apply from: gradleScript('android/artifacts.gradle')
 apply from: gradleScript('android/versioning.gradle')
 apply from: gradleScript('android/basic-android.gradle')
-apply from: gradleScript('android/signing-utils.gradle')
+...
 ```
 
 7. Define/override Android settings as required
@@ -57,23 +58,28 @@ apply from: gradleScript('android/signing-utils.gradle')
 - Flavors
 - Etc
 
-## Versioning
+## Versioning Android
 ```groovy
-applyScript("root/versioningUtils")
+apply from: gradleScript('android/versioning.gradle')
 ```
-This script defines a number of variable in order to help with the versioning, notably `versioningUtils.versionCode` and `versioningUtils.versionName` these are inferred from the project's gradle property file: `version_major`, `version_minor` and `version_patch`
-If the current commit of your repository has been tagged a version suffix and build counter will be automatically inferred. Git tags are expected to follow the below format:
-* `[major].[minor].[patch]` for final releases
-* `[major].[minor].[patch]-[build-type].[counter]` for alpha, beta and RC builds
 
-Note that if the version defined in your project's property file doesn't match the one in the Git tag the build will be aborted.
-
+## Versioning Libraries
+```groovy
+apply from: gradleScript('lib/versioning.gradle')
+```
 ## Publishing
 This script will automatically generate gradle tasks for the publication of the libraries and APKs of your project
 
 ```groovy
-applyScript("android/publishingUtils")
+apply from: gradleScript('publish/publishing-utils.gradle')
+
+publishingUtils?.publication {
+    groupId '...'
+    artifactId project.name
+    version libraryVersion
+}
 ```
+
 This script relies on the following environment variables `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` in order to generate publications for the following repositories:
 * _release_: s3://sdk-releases.aevi.com/maven2
 * _qa_: s3://sdk-qa.aevi.com/maven2
@@ -85,49 +91,18 @@ It also has Github package publishing built-in support, assuming the build is be
 ./gradlew app:publishReleasePublicationToGithub
 ```
 
-Publications details can be configured from your build script:
-```groovy
-publishingUtils.publication { variant ->
-    groupId "my.publication.group"
-    artifactId "my-app-$variant"
-    version "1.0.0"
-}
-```
-A list of all known AWS repository where to download the dependencies from can easily be added via the following:
-```groovy
-repositories {
-    publishingUtils.repos(it)
-}
-``` 
-
 ## Signing
 
-The approach detailed here is **DEPRECATED**!
-
-This script provides some predefined signing configurations that can be used into your build files.
-
-```groovy
-applyScript("android/signingUtils")
+In order to get automatic signing with the default SDK key, add the below to the relevant module gradle file
 ```
-Signing information is still expected to be passed through environment variables. For a given signing configuration, the following 2 environement variables are expected to be set:
-* `[name]_KEYSTORE`: the base64 encoded keystore to use
-* `[name]_KEYSTORE_PASSWORD`: the keystore password
+apply from: gradleScript('android/sdk-dev-signing-config.gradle')
+apply from: gradleScript('android/common-build-types-v2.gradle')
+```
 
-Note that the key alias being used is expected to be `key` and the key password is expected to be the same than the keystore password.
-
-This script has the following predefined signing configurations you can use:
-* __`signingUtils.albert`__ relying on `ALBERT_APP_xxx`
-* __`signingUtils.albertPlatform`__ relying on `ALBERT_PLATFORM_xxx`
-* __`signingUtils.aosp`__ relying on `AOSP_PLATFORM_xxx`
-* __`signingUtils.sdkDev`__ relying on `SDK_DEV_xxx`
-
-For other signing configurations, until they eventually get added to the list of prebuilt ones, you can use `signingUtils.config([name])`, assuming the environment variables: `[name]_KEYSTORE` and `[name]_KEYSTORE_PASSWORD` have been defined.
-
-Signing configurations can be used in build files as shown below
-```groovy
-debug {
-    signingConfig signingUtils.sdkDev ?: signingConfig
-}
+The Github Actions workflow `env` block must have:
+```
+SDK_DEV_KEYSTORE: ${{ secrets.SDK_DEV_KEYSTORE }}
+SDK_DEV_KEYSTORE_PASSWORD: ${{ secrets.SDK_DEV_KEYSTORE_PASSWORD }}
 ```
 
 ## License

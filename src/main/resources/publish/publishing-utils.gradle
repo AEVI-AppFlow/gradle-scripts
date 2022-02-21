@@ -1,3 +1,5 @@
+package publish
+
 apply plugin: "maven-publish"
 def propUtilsViaClassLoader = rootProject.buildscript.classLoader.getResource('android/property-utils.gradle');
 if (propUtilsViaClassLoader != null) {
@@ -21,7 +23,7 @@ class Publishing {
     private static String GITHUB_ID = "github_actor"
     private static String GITHUB_SECRET = "github_token"
 
-    private static githubRepo(Project project, RepositoryHandler handler) {
+    static githubRepo(Project project, RepositoryHandler handler) {
         project.propertyUtils.resolve([GITHUB_REPO, GITHUB_ID, GITHUB_SECRET]) { repo, id, secret ->
             handler.maven {
                 name = "github"
@@ -34,7 +36,7 @@ class Publishing {
         }
     }
 
-    private static awsRepos(Project project, RepositoryHandler handler) {
+    static awsRepos(Project project, RepositoryHandler handler) {
         project.propertyUtils.resolve([AWS_ID, AWS_SECRET]) { access, secret ->
             AWS_REPOS.each { repoName, repoUrl ->
                 handler.maven {
@@ -49,7 +51,7 @@ class Publishing {
         }
     }
 
-    private static Object androidVariants(Object android) {
+    static Object androidVariants(Object android) {
         if (android.hasProperty("applicationVariants")) {
             return android.applicationVariants
         } else if (android.hasProperty("libraryVariants")) {
@@ -59,7 +61,7 @@ class Publishing {
         }
     }
 
-    private static void androidPublications(PublicationContainer publications, Object android, Closure override, boolean isLibrary) {
+    static void androidPublications(PublicationContainer publications, Object android, Closure override, boolean isLibrary) {
         androidVariants(android).all { variant ->
             variant.outputs.each { output ->
                 publications.create(variant.name, MavenPublication) {
@@ -93,7 +95,7 @@ class Publishing {
     // Starting from version 3.6.0 the Android gradle plugin exposes standard gradle components that can be used
     // for publication. This method could therefore potentially be used to also publish Android artifacts however APKs
     // publications are getting bundle into a zip file...
-    private static void componentPublications(PublicationContainer publications, SoftwareComponentContainer components, Closure override) {
+    static void componentPublications(PublicationContainer publications, SoftwareComponentContainer components, Closure override) {
         components.all { component ->
             publications.create(component.name, MavenPublication) {
                 from component
