@@ -1,5 +1,3 @@
-package publish
-
 apply plugin: 'java-library'
 apply plugin: 'maven-publish'
 apply from: rootProject.buildscript.classLoader.getResource('lib/publishing-repos.gradle').toURI()

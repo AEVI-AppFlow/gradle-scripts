@@ -1,5 +1,3 @@
-package publish
-
 apply plugin: "maven-publish"
 def propUtilsViaClassLoader = rootProject.buildscript.classLoader.getResource('android/property-utils.gradle');
 if (propUtilsViaClassLoader != null) {
