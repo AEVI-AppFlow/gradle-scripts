@@ -1,0 +1,13 @@
+// Note: This depends on the io.github.gradle-nexus:publish-plugin plugin
+// Defaults allow Gradle to sync but will fail for publishing (only CI should publish this)
+nexusPublishing {
+    repositories {
+        sonatype {
+            stagingProfileId = System.getenv("MVN_CENTRAL_STAGING_PROFILE_ID") ?: ""
+            username = System.getenv("MVN_CENTRAL_USERNAME") ?: ""
+            password = System.getenv("MVN_CENTRAL_PASSWORD") ?: ""
+            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
+            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
+        }
+    }
+}
