@@ -1,8 +1,8 @@
 apply plugin: 'java-library'
 
 ext.version_major = 1
-ext.version_minor = 3
-ext.version_patch = 0
+ext.version_minor = 4
+ext.version_patch = 2
 
 apply from: 'src/main/resources/publish/publishing-utils.gradle'
 

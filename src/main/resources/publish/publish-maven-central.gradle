@@ -1,0 +1,60 @@
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
+
+apply from: rootProject.buildscript.classLoader.getResource('publish/sources-jar.gradle').toURI()
+apply from: rootProject.buildscript.classLoader.getResource('publish/javadoc-jar.gradle').toURI()
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                groupId group
+                artifactId project.name
+                version libraryVersion
+
+                if (project.plugins.findPlugin("com.android.library")) {
+                    from components.release
+                } else {
+                    from components.java
+                }
+
+                artifact sourcesJar
+                artifact javadocJar
+
+                pom {
+                    name = project.name
+                    description = project.description
+                    url = "https://github.com/${System.getenv("GITHUB_REPOSITORY")}"
+
+                    licenses {
+                        license {
+                            name = 'The Apache License, Version 2.0'
+                            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = 'Aevi'
+                            name = 'Aevi Developer'
+                            email = 'devops@aevi.com'
+                        }
+                    }
+                    scm {
+                        connection = "scm:git:github.com/${System.getenv("GITHUB_REPOSITORY")}.git"
+                        developerConnection = "scm:git:ssh://github.com/${System.getenv("GITHUB_REPOSITORY")}.git"
+                        url = "https://github.com/${System.getenv("GITHUB_REPOSITORY")}/tree/main"
+                    }
+                }
+            }
+        }
+    }
+
+    signing {
+        useInMemoryPgpKeys(
+                System.getenv("MVN_CENTRAL_PGP_KEY_ID") ?: '',
+                System.getenv("MVN_CENTRAL_PGP_PRIVATE_KEY") ?: '',
+                System.getenv("MVN_CENTRAL_PGP_PASSWORD") ?: '',
+        )
+        sign publishing.publications.release
+    }
+}
