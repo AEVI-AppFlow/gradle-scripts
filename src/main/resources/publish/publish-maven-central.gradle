@@ -48,13 +48,13 @@ afterEvaluate {
             }
         }
     }
-}
 
-signing {
-    useInMemoryPgpKeys(
-            System.getenv("MVN_CENTRAL_PGP_KEY_ID") ?: '',
-            System.getenv("MVN_CENTRAL_PGP_PRIVATE_KEY") ?: '',
-            System.getenv("MVN_CENTRAL_PGP_PASSWORD") ?: '',
-    )
-    sign publishing.publications.release
+    signing {
+        useInMemoryPgpKeys(
+                System.getenv("MVN_CENTRAL_PGP_KEY_ID") ?: '',
+                System.getenv("MVN_CENTRAL_PGP_PRIVATE_KEY") ?: '',
+                System.getenv("MVN_CENTRAL_PGP_PASSWORD") ?: '',
+        )
+        sign publishing.publications.release
+    }
 }
