@@ -56,5 +56,5 @@ signing {
             System.getenv("MVN_CENTRAL_PGP_PRIVATE_KEY") ?: '',
             System.getenv("MVN_CENTRAL_PGP_PASSWORD") ?: '',
     )
-    sign publishing.publications
+    sign publishing.publications.release
 }
