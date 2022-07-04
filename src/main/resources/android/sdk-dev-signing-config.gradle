@@ -1,5 +1,5 @@
 def sdkDevKeyStorePath = null
-def sdkDevKeyPassword = null;
+def sdkDevKeyPassword = null
 
 // For local signing, look for a property from gradle.properties
 if (project.hasProperty('sdk_dev_keystore_path')) {
@@ -37,6 +37,8 @@ android {
             storePassword sdkDevKeyPassword
             keyAlias "key"
             keyPassword sdkDevKeyPassword
+            v1SigningEnabled true
+            v2SigningEnabled true
         }
     }
 }
