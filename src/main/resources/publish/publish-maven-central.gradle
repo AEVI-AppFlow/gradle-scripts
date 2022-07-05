@@ -20,12 +20,7 @@ afterEvaluate {
                 version libraryVersion
 
                 if (project.plugins.findPlugin("com.android.library")) {
-                    // setup ONLY release to be bulished
-                    release(MavenPublication) {
-                        from components.release
-                        artifact androidSourcesJar
-                        artifact javadocJar
-                    }
+                    from components.release
                 } else {
                     from components.java
                     artifact sourcesJar
