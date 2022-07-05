@@ -93,7 +93,8 @@ class Publishing {
             this.project.afterEvaluate {
                 if (this.project.hasProperty("android")) {
                     this.project.plugins.withId('com.android.application') {
-                        androidPublications(publications, this.project["android"], override, false)
+                        // This is not needed with new gradle 7.1+ publish plugin
+                        // androidPublications(publications, this.project["android"], override, false)
                     }
                     this.project.plugins.withId('com.android.library') {
                         androidPublications(publications, this.project["android"], override, true)
