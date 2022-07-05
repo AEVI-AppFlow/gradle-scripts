@@ -19,7 +19,15 @@ afterEvaluate {
                 artifactId project.name
                 version libraryVersion
 
-                from components.java
+                if (project.plugins.findPlugin("com.android.library")) {
+                    from components.release
+                    artifact androidSourcesJar
+                    artifact javadocJar
+                } else {
+                    from components.java
+                    artifact sourcesJar
+                    artifact javadocJar
+                }
 
                 pom {
                     name = project.name
