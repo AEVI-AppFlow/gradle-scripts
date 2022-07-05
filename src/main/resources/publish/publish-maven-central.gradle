@@ -23,9 +23,9 @@ afterEvaluate {
                     from components.release
                 } else {
                     from components.java
-                    artifact sourcesJar
-                    artifact javadocJar
                 }
+                artifact androidJavadocJar
+                artifact javaSourcesJar
 
                 pom {
                     name = project.name
