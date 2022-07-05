@@ -4,14 +4,11 @@ apply plugin: 'signing'
 
 
 afterEvaluate {
-    def javaLibrary = false
     plugins.withId('com.android.library') {
-        javaLibrary = false
         apply from: rootProject.buildscript.classLoader.getResource('publish/sources-aar.gradle').toURI()
         apply from: rootProject.buildscript.classLoader.getResource('publish/javadoc-aar.gradle').toURI()
     }
     plugins.withId('java') {
-        javaLibrary = true
         apply from: rootProject.buildscript.classLoader.getResource('publish/sources-jar.gradle').toURI()
         apply from: rootProject.buildscript.classLoader.getResource('publish/javadoc-jar.gradle').toURI()
     }
@@ -22,17 +19,7 @@ afterEvaluate {
                 artifactId project.name
                 version libraryVersion
 
-                if (project.plugins.findPlugin("com.android.library")) {
-                    from components.release
-                } else {
-                    from components.java
-                }
-
-                if (javaLibrary)
-                    artifact sourcesJar
-                else
-                    artifact androidSourcesJar
-                artifact javadocJar
+                from components.java
 
                 pom {
                     name = project.name
