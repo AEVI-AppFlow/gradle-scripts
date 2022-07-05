@@ -1,10 +1,21 @@
 apply plugin: 'maven-publish'
 apply plugin: 'signing'
 
-apply from: rootProject.buildscript.classLoader.getResource('publish/sources-jar.gradle').toURI()
-apply from: rootProject.buildscript.classLoader.getResource('publish/javadoc-jar.gradle').toURI()
+
 
 afterEvaluate {
+    plugins.withId('com.android.application') {
+        // Implement here logic for supporting application publishing
+        throw new GradleException("==> Publishing application not supported yet")
+    }
+    plugins.withId('com.android.library') {
+        apply from: rootProject.buildscript.classLoader.getResource('publish/sources-aar.gradle').toURI()
+        apply from: rootProject.buildscript.classLoader.getResource('publish/javadoc-aar.gradle').toURI()
+    }
+    plugins.withId('java') {
+        apply from: rootProject.buildscript.classLoader.getResource('publish/sources-jar.gradle').toURI()
+        apply from: rootProject.buildscript.classLoader.getResource('publish/javadoc-jar.gradle').toURI()
+    }
     publishing {
         publications {
             release(MavenPublication) {
@@ -17,9 +28,6 @@ afterEvaluate {
                 } else {
                     from components.java
                 }
-
-                artifact sourcesJar
-                artifact javadocJar
 
                 pom {
                     name = project.name
