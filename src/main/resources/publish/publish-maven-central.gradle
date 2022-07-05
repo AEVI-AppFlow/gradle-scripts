@@ -21,11 +21,13 @@ afterEvaluate {
 
                 if (project.plugins.findPlugin("com.android.library")) {
                     from components.release
+                    artifact androidSourcesJar
+                    artifact javadocJar
                 } else {
                     from components.java
+                    artifact sourcesJar
+                    artifact javadocJar
                 }
-                artifact androidJavadocJar
-                artifact javaSourcesJar
 
                 pom {
                     name = project.name
