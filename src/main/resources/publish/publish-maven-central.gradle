@@ -4,10 +4,6 @@ apply plugin: 'signing'
 
 
 afterEvaluate {
-    plugins.withId('com.android.application') {
-        // Implement here logic for supporting application publishing
-        throw new GradleException("==> Publishing application not supported yet")
-    }
     plugins.withId('com.android.library') {
         apply from: rootProject.buildscript.classLoader.getResource('publish/sources-aar.gradle').toURI()
         apply from: rootProject.buildscript.classLoader.getResource('publish/javadoc-aar.gradle').toURI()
