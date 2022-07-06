@@ -12,6 +12,19 @@ afterEvaluate {
         apply from: rootProject.buildscript.classLoader.getResource('publish/sources-jar.gradle').toURI()
         apply from: rootProject.buildscript.classLoader.getResource('publish/javadoc-jar.gradle').toURI()
     }
+
+    // Don't use signing block if Maven[MVN_CENTRAL_PGP_KEY_ID] is not defined
+    if (System.env['MVN_CENTRAL_PGP_KEY_ID'] != null) {
+        signing {
+            useInMemoryPgpKeys(
+                    System.getenv("MVN_CENTRAL_PGP_KEY_ID") ?: '',
+                    System.getenv("MVN_CENTRAL_PGP_PRIVATE_KEY") ?: '',
+                    System.getenv("MVN_CENTRAL_PGP_PASSWORD") ?: '',
+            )
+            sign publishing.publications.release
+        }
+    }
+
     publishing {
         publications {
             release(MavenPublication) {
@@ -55,14 +68,5 @@ afterEvaluate {
                 }
             }
         }
-    }
-
-    signing {
-        useInMemoryPgpKeys(
-                System.getenv("MVN_CENTRAL_PGP_KEY_ID") ?: '',
-                System.getenv("MVN_CENTRAL_PGP_PRIVATE_KEY") ?: '',
-                System.getenv("MVN_CENTRAL_PGP_PASSWORD") ?: '',
-        )
-        sign publishing.publications.release
     }
 }
