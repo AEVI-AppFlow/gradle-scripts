@@ -36,6 +36,18 @@ class Publishing {
         }
     }
 
+    static void androidPublications(PublicationContainer publications, Object android, Closure override, boolean isLibrary) {
+        androidVariants(android).all { variant ->
+            variant.outputs.each { output ->
+                publications.create(variant.name, MavenPublication) {
+                    artifact output.outputFile
+                    override.delegate = it
+                    override(variant.baseName)
+                }
+            }
+        }
+    }
+
     // Starting from version 3.6.0 the Android gradle plugin exposes standard gradle components that can be used
     // for publication. This method could therefore potentially be used to also publish Android artifacts however APKs
     // publications are getting bundle into a zip file...
@@ -58,6 +70,18 @@ class Publishing {
     void publication(Closure override) {
         project.publishing {
             githubRepo(this.project, repositories)
+            this.project.afterEvaluate {
+                if (this.project.hasProperty("android")) {
+                    this.project.plugins.withId('com.android.application') {
+                        androidPublications(publications, this.project["android"], override, false)
+                    }
+                    this.project.plugins.withId('com.android.library') {
+                        androidPublications(publications, this.project["android"], override, true)
+                    }
+                } else {
+                    componentPublications(publications, this.project.components, override)
+                }
+            }
         }
     }
 
