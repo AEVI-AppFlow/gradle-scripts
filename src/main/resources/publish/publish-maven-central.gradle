@@ -1,10 +1,18 @@
 apply plugin: 'maven-publish'
 apply plugin: 'signing'
 
-apply from: rootProject.buildscript.classLoader.getResource('publish/sources-jar.gradle').toURI()
-apply from: rootProject.buildscript.classLoader.getResource('publish/javadoc-jar.gradle').toURI()
+
 
 afterEvaluate {
+    plugins.withId('com.android.library') {
+        apply from: rootProject.buildscript.classLoader.getResource('publish/sources-aar.gradle').toURI()
+        apply from: rootProject.buildscript.classLoader.getResource('publish/javadoc-aar.gradle').toURI()
+    }
+    plugins.withId('java') {
+        apply from: rootProject.buildscript.classLoader.getResource('publish/sources-jar.gradle').toURI()
+        apply from: rootProject.buildscript.classLoader.getResource('publish/javadoc-jar.gradle').toURI()
+    }
+
     publishing {
         publications {
             release(MavenPublication) {
@@ -14,12 +22,13 @@ afterEvaluate {
 
                 if (project.plugins.findPlugin("com.android.library")) {
                     from components.release
+                    artifact androidSourcesJar
+                    artifact javadocJar
                 } else {
                     from components.java
+                    artifact sourcesJar
+                    artifact javadocJar
                 }
-
-                artifact sourcesJar
-                artifact javadocJar
 
                 pom {
                     name = project.name
@@ -49,12 +58,15 @@ afterEvaluate {
         }
     }
 
-    signing {
-        useInMemoryPgpKeys(
-                System.getenv("MVN_CENTRAL_PGP_KEY_ID") ?: '',
-                System.getenv("MVN_CENTRAL_PGP_PRIVATE_KEY") ?: '',
-                System.getenv("MVN_CENTRAL_PGP_PASSWORD") ?: '',
-        )
-        sign publishing.publications.release
+    // Don't use signing block if Maven[MVN_CENTRAL_PGP_KEY_ID] is not defined
+    if (System.env['MVN_CENTRAL_PGP_KEY_ID'] != null) {
+        signing {
+            useInMemoryPgpKeys(
+                    System.getenv("MVN_CENTRAL_PGP_KEY_ID") ?: '',
+                    System.getenv("MVN_CENTRAL_PGP_PRIVATE_KEY") ?: '',
+                    System.getenv("MVN_CENTRAL_PGP_PASSWORD") ?: '',
+            )
+            sign publishing.publications.release
+        }
     }
 }
