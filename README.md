@@ -7,10 +7,10 @@ A set of re-usable Gradle scripts for Android apps and libraries.
 Update your root `build.gradle` as per below.
 
 1. Add sdk releases as a buildscript repository
-```
+```groovy
    maven {
-           name = "github-aevi-uk"
-           url = uri("https://maven.pkg.github.com/aevi-uk/gradle-scripts")
+           name = "github-aevi-appflow"
+           url = uri("https://maven.pkg.github.com/AEVI-AppFlow/gradle-scripts")
            credentials {
                username = System.getenv("GITHUB_ACTOR") ?: gh_username
                password = System.getenv("GITHUB_TOKEN") ?: gh_token
@@ -19,38 +19,53 @@ Update your root `build.gradle` as per below.
 ```
 
 2. Add gradle-scripts as a buildscript dependency
-```
+```groovy
 classpath 'com.aevi.sdk.build:gradle-scripts:<version>'
 ```
 
 3. Add a lambda at root of file
-```
+```groovy
 ext.gradleScript = { path ->
     return rootProject.buildscript.classLoader.getResource(path).toURI()
 }
 ```
+If you are using kts then you will need to add `gradleScriptLoader` at top of build.gradle.kts file
+(don't forget to import `import java.net.URI` otherwise you will get error)
+```kotlin
+   val gradleScriptLoader by extra(
+       fun(string: String): URI? {
+           var data: URI? = null
+           project.buildscript {
+               data = classLoader.getResource(string).toURI()
+           }
+           return data
+       }
+   )
+```
+and then you can call
+```kotlin
+   apply(from = gradleScriptLoader("root/common-tasks.gradle"))
+```
 
 4. Apply root scripts
-```
-apply from: gradleScript('root/common-tasks.gradle')
-apply from: gradleScript('root/repositories.gradle')
+```groovy
+   apply from: gradleScript('root/common-tasks.gradle')
 ```
 
 5. In your app/lib modules build.gradle
    Define required variables
-```
-ext.applicationId = "com.aevi.XXX"
-ext.applicationName = "YourAppName"
-ext.applicationTargetSdkVersion = <target>
-ext.applicationMinSdkVersion = <min>
+```groovy
+   ext.applicationId = "com.aevi.XXX"
+   ext.applicationName = "YourAppName"
+   ext.applicationTargetSdkVersion = <target>
+   ext.applicationMinSdkVersion = <min>
 ```
 
 6. Apply relevant scripts
-```
-apply from: gradleScript('android/artifacts.gradle')
-apply from: gradleScript('android/versioning.gradle')
-apply from: gradleScript('android/basic-android.gradle')
-...
+```groovy
+   apply from: gradleScript('android/artifacts.gradle')
+   apply from: gradleScript('android/versioning.gradle')
+   apply from: gradleScript('android/basic-android.gradle')
 ```
 
 7. Define/override Android settings as required
@@ -60,7 +75,7 @@ apply from: gradleScript('android/basic-android.gradle')
 
 ## Versioning Android
 ```groovy
-apply from: gradleScript('android/versioning.gradle')
+   apply from: gradleScript('android/versioning.gradle')
 ```
 
 ## Versioning Libraries
@@ -79,11 +94,6 @@ publishingUtils?.publication {
     version libraryVersion
 }
 ```
-
-This script relies on the following environment variables `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` in order to generate publications for the following repositories:
-* _release_: s3://sdk-releases.aevi.com/maven2
-* _qa_: s3://sdk-qa.aevi.com/maven2
-* _snapshot_: s3://sdk-snapshots.aevi.com/maven2
 
 It also has Github package publishing built-in support, assuming the build is being run from Github actions:
 ```shell
