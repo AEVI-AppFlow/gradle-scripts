@@ -1,9 +1,8 @@
 apply plugin: 'maven-publish'
 apply plugin: 'signing'
 
-
-
 afterEvaluate {
+
     plugins.withId('com.android.library') {
         apply from: rootProject.buildscript.classLoader.getResource('publish/sources-aar.gradle').toURI()
         apply from: rootProject.buildscript.classLoader.getResource('publish/javadoc-aar.gradle').toURI()
@@ -15,7 +14,7 @@ afterEvaluate {
 
     publishing {
         publications {
-            release(MavenPublication) {
+            library(MavenPublication) {
                 groupId group
                 artifactId project.name
                 version libraryVersion
@@ -66,7 +65,7 @@ afterEvaluate {
                     System.getenv("MVN_CENTRAL_PGP_PRIVATE_KEY") ?: '',
                     System.getenv("MVN_CENTRAL_PGP_PASSWORD") ?: '',
             )
-            sign publishing.publications.release
+            sign publishing.publications.library
         }
     }
 }

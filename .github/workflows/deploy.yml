@@ -41,4 +41,9 @@ jobs:
         run: |
           ./gradlew publishJavaPublicationToGithubRepository
 
-
+      - name: Create github release
+        id: create-release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Version ${{env.TAG}}
+          body: See [CHANGELOG](https://github.com/${{github.repository}}/blob/${{env.TAG}}/CHANGELOG.md) for release notes.
