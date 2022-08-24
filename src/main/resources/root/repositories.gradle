@@ -1,0 +1,79 @@
+def awsAccessId = null
+def awsAccessKey = null
+if (project.hasProperty('aws_accessid')) {
+    awsAccessId = aws_accessid
+    awsAccessKey = aws_accesskey
+} else if (System.getenv("AWS_ACCESS_KEY_ID") != null) {
+    awsAccessId = System.getenv("AWS_ACCESS_KEY_ID")
+    awsAccessKey = System.getenv("AWS_SECRET_ACCESS_KEY")
+}
+
+def githubUsername = null
+def githubToken = null
+if (project.hasProperty('gh_username')) {
+    githubUsername = gh_username
+    githubToken = gh_token
+} else if (System.getenv("GITHUB_TOKEN") != null) {
+    githubUsername = System.getenv("GITHUB_ACTOR")
+    githubToken = System.getenv("GITHUB_TOKEN")
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        if (githubUsername != null) {
+            maven {
+                name = "github-aevi-pd"
+                url = uri("https://maven.pkg.github.com/aevi-pd/*")
+                credentials {
+                    username = githubUsername
+                    password = githubToken
+                }
+            }
+            maven {
+                name = "github-aevi-dev-utils"
+                url = uri("https://maven.pkg.github.com/aevi-dev-utils/*")
+                credentials {
+                    username = githubUsername
+                    password = githubToken
+                }
+            }
+            maven {
+                name = "github-aevi-appflow"
+                url = uri("https://maven.pkg.github.com/AEVI-AppFlow/*")
+                credentials {
+                    username = githubUsername
+                    password = githubToken
+                }
+            }
+        }
+        mavenLocal()
+        maven {
+            url uri("https://sdk-public-artifacts.s3.eu-west-1.amazonaws.com/maven2")
+        }
+        if (awsAccessId != null) {
+            maven {
+                url "s3://sdk-releases.aevi.com/maven2"
+                credentials(AwsCredentials) {
+                    accessKey awsAccessId
+                    secretKey awsAccessKey
+                }
+            }
+            maven {
+                url "s3://sdk-qa.aevi.com/maven2"
+                credentials(AwsCredentials) {
+                    accessKey awsAccessId
+                    secretKey awsAccessKey
+                }
+            }
+            maven {
+                url "s3://sdk-snapshots.aevi.com/maven2"
+                credentials(AwsCredentials) {
+                    accessKey awsAccessId
+                    secretKey awsAccessKey
+                }
+            }
+        }
+    }
+}
